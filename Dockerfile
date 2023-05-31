@@ -3,7 +3,7 @@ ARG GO_VERSION=1.20
 FROM golang:$GO_VERSION as builder
 
 ARG BUILD_TYPE=
-ARG GO_TAGS=
+ARG GO_TAGS=stablediffusion
 ARG CUDA_MAJOR_VERSION=11
 ARG CUDA_MINOR_VERSION=7
 
@@ -18,25 +18,22 @@ ENV REBUILD=true
 WORKDIR /build
 
 RUN apt-get update && \
-    apt-get install -y ca-certificates cmake curl
+    apt-get install -y --no-install-recommends ca-certificates cmake curl
 
 # CuBLAS requirements
 RUN if [ "${BUILD_TYPE}" = "cublas" ]; then \
-    apt-get install -y software-properties-common && \
+    apt-get install -y --no-install-recommends software-properties-common && \
     apt-add-repository contrib && \
     curl -O https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/cuda-keyring_1.0-1_all.deb && \
     dpkg -i cuda-keyring_1.0-1_all.deb && \
     rm -f cuda-keyring_1.0-1_all.deb && \
     apt-get update && \
-    apt-get install -y cuda-nvcc-${CUDA_MAJOR_VERSION}-${CUDA_MINOR_VERSION} libcublas-dev-${CUDA_MAJOR_VERSION}-${CUDA_MINOR_VERSION} \
+    apt-get install -y --no-install-recommends cuda-nvcc-${CUDA_MAJOR_VERSION}-${CUDA_MINOR_VERSION} libcublas-dev-${CUDA_MAJOR_VERSION}-${CUDA_MINOR_VERSION} \
     ; fi
 ENV PATH /usr/local/cuda/bin:${PATH}
 
-# OpenBLAS requirements
-RUN apt-get install -y libopenblas-dev
-
-# Stable Diffusion requirements
-RUN apt-get install -y libopencv-dev && \
+# OpenBLAS requirements and Stable Diffusion requirements
+RUN apt-get install -y --no-install-recommends libopenblas-dev libopencv-dev && \
     ln -s /usr/include/opencv4/opencv2 /usr/include/opencv2
 
 COPY . .
@@ -61,25 +58,24 @@ ENV REBUILD=true
 WORKDIR /build
 
 RUN apt-get update && \
-    apt-get install -y ca-certificates cmake curl
+    apt-get install -y --no-install-recommends ca-certificates cmake curl && \
+    rm -rf /var/apt/cache
 
 # CuBLAS requirements
 RUN if [ "${BUILD_TYPE}" = "cublas" ]; then \
-    apt-get install -y software-properties-common && \
+    apt-get install -y --no-install-recommends software-properties-common && \
     apt-add-repository contrib && \
     curl -O https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/cuda-keyring_1.0-1_all.deb && \
     dpkg -i cuda-keyring_1.0-1_all.deb && \
     rm -f cuda-keyring_1.0-1_all.deb && \
     apt-get update && \
-    apt-get install -y cuda-nvcc-${CUDA_MAJOR_VERSION}-${CUDA_MINOR_VERSION} libcublas-dev-${CUDA_MAJOR_VERSION}-${CUDA_MINOR_VERSION} \
+    apt-get install -y  --no-install-recommends cuda-nvcc-${CUDA_MAJOR_VERSION}-${CUDA_MINOR_VERSION} libcublas-dev-${CUDA_MAJOR_VERSION}-${CUDA_MINOR_VERSION} && \
+    rm -rf /var/apt/cache \
     ; fi
 ENV PATH /usr/local/cuda/bin:${PATH}
 
-# OpenBLAS requirements
-RUN apt-get install -y libopenblas-dev
-
-# Stable Diffusion requirements
-RUN apt-get install -y libopencv-dev && \
+# OpenBLAS requirements and Stable Diffusion requirements
+RUN apt-get install -y --no-install-recommends libopenblas-dev ffmpeg libopencv-dev && \
     ln -s /usr/include/opencv4/opencv2 /usr/include/opencv2
 
 COPY . .
